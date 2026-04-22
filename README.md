@@ -26,3 +26,12 @@ la note de zéro pour la partie concernée.
 
 1.4. Arborescence
 
+1.5. Fonctions
+
+config/ Paramètres globaux (taux TVA, chemins des fichiers, etc.)
+auth/ Gestion de l’authentification et des sessions
+modules/ Modules fonctionnels (produits, facturation, administration)
+data/ Fichiers de persistance des données
+includes/ Fonctions PHP réutilisables incluses dans les pages
+assets/ Ressources statiques (CSS, JavaScript)
+rapports/ Génération des rapports journaliers et mensuels
