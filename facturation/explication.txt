@@ -1,0 +1,2 @@
+Require_once : sert à inclure un fichier une seule fois dans le script.
+les images sont mis dans le dossier assets
