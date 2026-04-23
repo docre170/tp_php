@@ -65,6 +65,16 @@ body {
     gap: 1rem;
 }
 
+.nav ul {
+    list-style: none;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+}
+
 .user-info {
     font-size: 0.9rem;
     color: #ecf0f1;
@@ -181,7 +191,7 @@ body {
 }
 
 .btn-secondary {
-    background-color: var(--text-light);
+    background-color: #4a6572;
     color: white;
 }
 
