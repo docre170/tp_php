@@ -1,2 +1,7 @@
-Require_once : sert à inclure un fichier une seule fois dans le script.
-les images sont mis dans le dossier assets
+INDEX
+1.Require_once : sert à inclure un fichier une seule fois dans le script.
+2.les images sont mis dans le dossier assets.
+3.declare(strict_types=1): fait marcher les codes et evite les bugs.
+4.object-fit:cover :: ça permet de controler comment une img ou une vidéo s'adapte à son conteneur.
+------------------------------------------------------------------------------------------------------
+CAISSE

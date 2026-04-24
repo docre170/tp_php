@@ -16,6 +16,11 @@
         "nom": "Huile 1L",
         "prix": 4.2,
         "stock": 50
+    },
+    {
+        "code": "12223333",
+        "nom": "savon",
+        "prix": 0.31,
+        "stock": 2
     }
 ]
-

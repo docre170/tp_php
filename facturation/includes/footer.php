@@ -1,7 +1,7 @@
 </main>
 <footer class="footer">
     <div class="container">
-        <p>Projet TP PHP procedurale - persistance fichiers JSON</p>
+        <p>TP PHP - CODE DREAMEUR</p>
     </div>
 </footer>
 
