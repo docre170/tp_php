@@ -1,2 +1,16 @@
-[]
-
+[
+    {
+        "numero": "FAC-20260427-0001",
+        "date": "2026-04-27 12:27:01",
+        "caissier": "admin",
+        "lignes": [
+            {
+                "code": "100001",
+                "nom": "zer",
+                "prix": 0.07,
+                "quantite": 6
+            }
+        ],
+        "total": 0.42
+    }
+]
