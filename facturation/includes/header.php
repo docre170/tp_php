@@ -38,6 +38,11 @@ $flash = get_flash();
                     <li>
                         <a class="btn btn-secondary" href="<?= e(base_url('rapports/rapport-journalier.php')); ?>">Rapport</a>
                     </li>
+                    <?php if ($user !== null && ($user['role'] ?? '') === 'admin'): ?>
+                        <li>
+                            <a class="btn btn-secondary" href="<?= e(base_url('modules/inscription.php')); ?>">Comptes</a>
+                        </li>
+                    <?php endif; ?>
                     <?php if ($user !== null): ?>
                         <li class="user-info"><?= e($user['nom']); ?> (<?= e($user['role']); ?>)</li>
                         <li><a class="btn btn-logout" href="<?= e(base_url('auth/logout.php')); ?>">Deconnexion</a></li>

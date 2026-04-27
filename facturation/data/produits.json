@@ -1,9 +1,9 @@
 [
     {
         "code": "100001",
-        "nom": "Riz 1kg",
-        "prix": 2.5,
-        "stock": 100
+        "nom": "zer",
+        "prix": 0.07,
+        "stock": 6
     },
     {
         "code": "100002",
@@ -21,6 +21,18 @@
         "code": "12223333",
         "nom": "savon",
         "prix": 0.31,
-        "stock": 2
+        "stock": 3
+    },
+    {
+        "code": "12343545",
+        "nom": "yyyy",
+        "prix": 0.63,
+        "stock": 7
+    },
+    {
+        "code": "12334868",
+        "nom": "FESSES",
+        "prix": 1.39,
+        "stock": 5
     }
 ]
