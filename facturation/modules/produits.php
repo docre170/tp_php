@@ -16,9 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nom = post_string('nom');
     $prix = post_float('prix');
     $stock = post_int('stock');
+    $date_expiration = post_string('date_expiration');
 
-    if ($code === '' || $nom === '' || $prix <= 0 || $stock < 0) {
-        set_flash('error', 'Veuillez remplir correctement tous les champs.');
+    // Validation du format de date MM-JJ-AAAA
+    $date_valid = preg_match('/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}$/', $date_expiration) === 1;
+
+    if ($code === '' || $nom === '' || $prix <= 0 || $stock < 0 || !$date_valid) {
+        set_flash('error', 'Veuillez remplir correctement tous les champs. Date au format MM-JJ-AAAA.');
         redirect_to('modules/produits.php');
     }
 
@@ -30,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $produit['nom'] = $nom;
             $produit['prix'] = $prix;
             $produit['stock'] = $stock;
+            $produit['date_expiration'] = $date_expiration;
             $found = true;
             break;
         }
@@ -42,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'nom' => $nom,
             'prix' => $prix,
             'stock' => $stock,
+            'date_expiration' => $date_expiration,
         ];
     }
 
@@ -72,6 +78,10 @@ require_once __DIR__ . '/../includes/header.php';
             <label for="stock">Stock</label>
             <input id="stock" name="stock" type="number" min="0" step="1" required>
         </div>
+        <div class="form-group">
+            <label for="date_expiration">Date d'expiration (MM-JJ-AAAA)</label>
+            <input id="date_expiration" name="date_expiration" type="text" placeholder="MM-JJ-AAAA" pattern="(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}" required>
+        </div>
         <button class="btn btn-success" type="submit">Enregistrer</button>
     </form>
 </section>
@@ -83,8 +93,9 @@ require_once __DIR__ . '/../includes/header.php';
             <tr>
                 <th>Code</th>
                 <th>Nom</th>
-                <th>Prix</th>
+                <th>Prix (CDF)</th>
                 <th>Stock</th>
+                <th>Date d'expiration</th>
             </tr>
         </thead>
         <tbody>
@@ -92,8 +103,9 @@ require_once __DIR__ . '/../includes/header.php';
             <tr>
                 <td><?= e((string) ($produit['code'] ?? '')); ?></td>
                 <td><?= e((string) ($produit['nom'] ?? '')); ?></td>
-                <td><?= e(number_format((float) ($produit['prix'] ?? 0), 2)); ?> $</td>
+                <td><?= e(number_format((float) ($produit['prix'] ?? 0), 2)); ?> CDF</td>
                 <td><?= e((string) ($produit['stock'] ?? 0)); ?></td>
+                <td><?= e((string) ($produit['date_expiration'] ?? 'N/A')); ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

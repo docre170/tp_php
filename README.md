@@ -58,5 +58,25 @@ permettant :
 - Navigateur web moderne
 - Accés à la camera
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+3. PARTIE ENREGISTREMENT
 
+3.1 Description fonctionnelle
+
+Cette partie concerne l’alimentation du catalogue produits. Lorsqu’un produit est pré-
+senté pour la première fois au système, son code-barres est inconnu. Le module d’enregistrement
+permet alors de l’associer à ses informations commerciales.
+
+3.2 Comportement attendu
+
+1. L’utilisateur active la caméra via l’interface web.
+2. La bibliothèque JavaScript lit le code-barres et transmet sa valeur au serveur PHP.
+3. Le serveur PHP consulte data/produits.json pour vérifier si le code-barres est
+déjà référencé.
+4. Si le code-barres est inconnu, un formulaire s’affiche avec les champs :
+— Nom du produit
+— Prix unitaire hors taxe (en CDF)
+— Date d’expiration (format MM-JJ-AAAA)
+— Quantité initiale en stock
+5. Après validation, les données sont écrites dans data/produits.json.
+6. Si le code-barres est déjà connu, les informations existantes s’affichent.
 
