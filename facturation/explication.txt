@@ -5,3 +5,11 @@ INDEX
 4.object-fit:cover :: ça permet de controler comment une img ou une vidéo s'adapte à son conteneur.
 ------------------------------------------------------------------------------------------------------
 CAISSE
+
+
+Implémenter un système d’authentification et de contrôle d’accès basé sur les rôles
+— Intégrer une bibliothèque de lecture de codes-barres dans une interface web
+— Appliquer les bonnes pratiques de validation et d’assainissement des données en
+PHP
+— Rédiger un rapport technique structuré en LATEX
+

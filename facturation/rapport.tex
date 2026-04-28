@@ -1,0 +1,740 @@
+\documentclass[12pt,a4paper,french]{report}
+
+% Packages essentiels
+\usepackage[french]{babel}
+\usepackage[utf-8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{tocloft}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{float}
+
+% Configuration des marges
+\geometry{
+    left=2.5cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
+
+% Configuration des couleurs pour le code
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Configuration des listings pour PHP
+\lstdefinelanguage{PHP}{
+    language=PHP,
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codepurple},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    morekeywords={declare, strict_types}
+}
+
+% En-têtes et pieds de page
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Année académique 2025-2026}
+\lhead{Système de Facturation Supermarché}
+\cfoot{\thepage}
+
+% Configuration de la table des matières
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+% Titre personnalisé pour les chapitres
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+    {\normalfont\Large\bfseries}
+    {\chaptertitlename\ \thechapter}{20pt}{\Large}
+
+\title{%
+    \textbf{PAYPAS} \\[0.5cm]
+    \textbf{travail pratique académique} \\[1cm]
+    Développement Web en PHP Procédural \\[0.5cm]
+}
+\author{CODE DREAMEUR -- Faculté de Sciences Informatiques}
+\date{28 avril 2026}
+
+\begin{document}
+
+% Page de titre
+\maketitle
+
+\newpage
+
+% Table des matières
+\tableofcontents
+
+\newpage
+
+% ============================================================================
+\chapter{Introduction}
+% ============================================================================
+
+\section{Contexte et problématique}
+
+Un petit supermarché souhaite moderniser son processus de vente. Actuellement, les caissiers saisissent manuellement 
+les articles, ce qui génère des erreurs et ralentit les transactions. Le gérant souhaite mettre en place un système de 
+caisse informatisé, accessible depuis un navigateur web, capable de lire des codes-barres via la caméra d'un téléphone 
+ou d'un ordinateur, et de produire des factures détaillées.
+
+\section{Objectifs pédagogiques}
+
+Ce projet vise à développer les compétences suivantes :
+
+\begin{enumerate}
+    \item Concevoir et structurer une application web PHP selon le paradigme procédural;
+    \item Utiliser les fichiers comme mécanisme de persistance des données;
+    \item Implémenter un système d'authentification et de contrôle d'accès basé sur les rôles;
+    \item Intégrer une bibliothèque de lecture de codes-barres dans une interface web;
+    \item Appliquer les bonnes pratiques de validation et d'assainissement des données en PHP;
+    \item Rédiger un rapport technique structuré en \LaTeX{}
+\end{enumerate}
+
+\section{Contraintes du projet}
+
+Toute la persistance des données doit être assurée exclusivement par des fichiers au format JSON.
+ L'utilisation d'un système de gestion de base de données (MySQL, PostgreSQL, SQLite, MongoDB, etc.) 
+ est strictement interdite.
+
+% ============================================================================
+\chapter{Architecture et conception}
+% ============================================================================
+
+\section{Présentation générale}
+
+L'application est développée en PHP procédural, sans utilisation de base de données. 
+Elle suit une architecture en couches avec une séparation claire entre l'authentification, la logique métier et 
+la présentation.
+
+\section{Arborescence du projet}
+
+L'organisation des fichiers est la suivante :
+
+\begin{verbatim}
+facturation/
+├── index.php              # Tableau de bord principal
+├── rapport.tex            # Ce rapport
+├── assets/                # Ressources statiques
+│   ├── css/
+│   │   └── style.css      # Feuille de styles
+│   ├── images/            # Images du projet
+│   └── js/
+│       └── scanner.js     # Bibliothèque de lecture codes-barres
+├── auth/                  # Gestion authentification
+│   ├── login.php
+│   ├── logout.php
+│   └── session.php
+├── config/                # Configuration globale
+│   └── config.php
+├── data/                  # Fichiers de persistance
+│   ├── factures.json
+│   ├── produits.json
+│   ├── users.json
+│   └── utilisateurs.json
+├── includes/              # Fonctions réutilisables
+│   ├── fonctions-auth.php
+│   ├── fonctions-factures.php
+│   ├── fonctions-produits.php
+│   ├── header.php
+│   ├── footer.php
+│   └── helpers.php
+├── modules/               # Modules fonctionnels
+│   ├── caisse.php
+│   ├── factures.php
+│   ├── inscription.php
+│   ├── produits.php
+│   ├── admin/             # Fonctionnalités admin
+│   │   ├── ajouter-compte.php
+│   │   ├── gestion-comptes.php
+│   │   └── supprimer-comptes.php
+│   ├── facturation/       # Factures
+│   │   ├── afficher-facture.php
+│   │   ├── calcul.php
+│   │   └── nouvelle-facture.php
+│   ├── produits/          # Gestion produits
+│   │   ├── enregistrer.php
+│   │   ├── lire.php
+│   │   └── liste.php
+└── rapports/              # Génération rapports
+    ├── rapport-journalier.php
+    └── rapport-mensuel.php
+\end{verbatim}
+
+\section{Choix technologiques}
+
+\subsection{PHP procédural}
+Le choix du paradigme procédural permet une compréhension progressive de la programmation web sans abstraction excessive. Le code reste lisible et direct.
+
+\subsection{Fichiers JSON pour la persistance}
+Les fichiers JSON offrent une structure simple et lisible, facilement éditable et sans dépendance externe.
+ Chaque entité (produits, factures, utilisateurs) est stockée dans un fichier JSON séparé.
+
+\subsection{Bibliothèque Html5Qrcode}
+Cette bibliothèque JavaScript permet la lecture des codes-barres directement via la caméra du navigateur,
+ sans installation de plugin.
+
+% ============================================================================
+\chapter{Réalisation des objectifs}
+% ============================================================================
+
+\section{Objectif 1 : Architecture PHP procédurale}
+
+L'application est entièrement structurée selon le paradigme procédural :
+
+\begin{itemize}
+    \item \textbf{Configuration centralisée} (\texttt{config/config.php}) : constantes globales, chemins des fichiers
+    \item \textbf{Fonctions utilitaires} (\texttt{includes/helpers.php}) : fonctions réutilisables
+    \item \textbf{Séparation des responsabilités} : authentification, métier, présentation
+    \item \textbf{Modules indépendants} : chaque module gère un domaine spécifique
+\end{itemize}
+
+\subsection{Exemple : Helpers}
+
+\begin{lstlisting}[language=PHP, caption=Fonctions essentielles (helpers.php)]
+function e(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+function read_json_file(string $filePath): array
+{
+    if (!file_exists($filePath)) return [];
+    $content = file_get_contents($filePath);
+    $decoded = json_decode($content, true);
+    return is_array($decoded) ? $decoded : [];
+}
+
+function write_json_file(string $filePath, array $data): bool
+{
+    $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    return file_put_contents($filePath, $json) !== false;
+}
+end{lstlisting}
+
+\section{Objectif 2 : Persistance par fichiers}
+
+Les données sont entièrement persistées en JSON :
+
+\subsection{Structure des fichiers}
+
+\subsubsection{Produits (produits.json)}
+\begin{lstlisting}[language=PHP]
+[
+    {
+        "code": "100001",
+        "nom": "Produit A",
+        "prix": 15.99,
+        "stock": 100
+    }
+]
+\end{lstlisting}
+
+\subsubsection{Factures (factures.json)}
+\begin{lstlisting}[language=PHP]
+[
+    {
+        "numero": "FAC-20260427-0001",
+        "date": "2026-04-27 12:27:01",
+        "caissier": "admin",
+        "lignes": [
+            {
+                "code": "100001",
+                "nom": "Produit A",
+                "prix": 15.99,
+                "quantite": 2
+            }
+        ],
+        "total": 31.98
+    }
+]
+\end{lstlisting}
+
+\subsubsection{Utilisateurs (users.json)}
+\begin{lstlisting}[language=PHP]
+[
+    {
+        "username": "admin",
+        "password": "admin123",
+        "nom": "Administrateur",
+        "role": "admin"
+    },
+    {
+        "username": "caissier",
+        "password": "caissier123",
+        "nom": "Caissier 1",
+        "role": "caissier"
+    }
+]
+\end{lstlisting}
+
+\subsection{Opérations de persistance}
+
+\begin{lstlisting}[language=PHP, caption=Lecture et écriture JSON]
+// Lecture
+$produits = read_json_file(PRODUCTS_FILE);
+
+// Écriture
+$factures = read_json_file(INVOICES_FILE);
+$factures[] = $nouvelle_facture;
+write_json_file(INVOICES_FILE, $factures);
+\end{lstlisting}
+
+\section{Objectif 3 : Authentification et contrôle d'accès par rôles}
+
+\subsection{Système de sessions}
+
+L'authentification utilise les sessions PHP :
+
+\begin{lstlisting}[language=PHP, caption=Gestion des sessions (auth/session.php)]
+session_start();
+
+function is_logged_in(): bool
+{
+    return isset($_SESSION['user']) && is_array($_SESSION['user']);
+}
+
+function current_user(): ?array
+{
+    return $_SESSION['user'] ?? null;
+}
+
+function require_login(): void
+{
+    if (!is_logged_in()) {
+        redirect_to('auth/login.php');
+    }
+}
+\end{lstlisting}
+
+\subsection{Authentification utilisateur}
+
+Les identifiants sont vérifiés dans \texttt{auth/login.php} :
+
+\begin{lstlisting}[language=PHP, caption=Authentification (extrait)]
+$users = read_json_file(USERS_FILE);
+
+foreach ($users as $user) {
+    if ($user['username'] === $username && 
+        $user['password'] === $password) {
+        $_SESSION['user'] = [
+            'username' => $user['username'],
+            'nom' => $user['nom'],
+            'role' => $user['role'],
+        ];
+        redirect_to('index.php');
+    }
+}
+\end{lstlisting}
+
+\subsection{Contrôle d'accès par rôles}
+
+Les rôles sont stockés dans la session et peuvent être vérifiés :
+
+\begin{itemize}
+    \item \textbf{admin} : accès complet, gestion des comptes
+    \item \textbf{caissier} : accès à la caisse, lecture codes-barres
+    \item \textbf{gérant} : accès aux rapports et statistiques
+\end{itemize}
+
+\section{Objectif 4 : Lecture de codes-barres}
+
+\subsection{Intégration Html5Qrcode}
+
+La bibliothèque est intégrée dans \texttt{assets/js/scanner.js} :
+
+\begin{lstlisting}[language=PHP, caption=Scanner de codes-barres]
+document.addEventListener("DOMContentLoaded", function () {
+    const scanBtn = document.getElementById("start-scan");
+    const codeInput = document.getElementById("code-input");
+
+    scanBtn.addEventListener("click", async function () {
+        let scanner = new Html5Qrcode("scanner-video");
+        
+        await scanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            function (decodedText) {
+                codeInput.value = decodedText;
+                scanner.stop();
+            }
+        );
+    });
+});
+\end{lstlisting}
+
+\subsection{Fonctionnalités}
+
+\begin{itemize}
+    \item Activation par clic sur le bouton « Scanner »
+    \item Utilisation de la caméra de l'appareil
+    \item Décodage automatique du code-barres
+    \item Remplissage automatique du champ de saisie
+    \item Fallback : saisie manuelle possible
+\end{itemize}
+
+\section{Objectif 5 : Validation et assainissement des données}
+
+\subsection{Fonctions de validation}
+
+Les données POST sont validées via des fonctions typées :
+
+\begin{lstlisting}[language=PHP, caption=Fonctions de validation (helpers.php)]
+function post_string(string $key): string
+{
+    $value = $_POST[$key] ?? '';
+    return trim((string) $value);
+}
+
+function post_float(string $key): float
+{
+    $value = str_replace(',', '.', post_string($key));
+    return is_numeric($value) ? (float) $value : 0.0;
+}
+
+function post_int(string $key): int
+{
+    return (int) post_string($key);
+}
+\end{lstlisting}
+
+\subsection{Assainissement en sortie}
+
+Les données en sortie HTML sont échappées :
+
+\begin{lstlisting}[language=PHP]
+function e(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+// Utilisation en template
+<p><?= e($user_input); ?></p>
+\end{lstlisting}
+
+\subsection{Exemples d'application}
+
+\begin{lstlisting}[language=PHP, caption=Validation lors de l'ajout de produit]
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $code = post_string('code');           // Chaîne validée
+    $nom = post_string('nom');             // Chaîne validée
+    $prix = post_float('prix');            // Float validé
+    $stock = post_int('stock');            // Entier validé
+    
+    // Vérification logique
+    if ($prix < 0) {
+        $error = 'Le prix ne peut pas être négatif';
+    }
+}
+\end{lstlisting}
+
+\subsection{Déclaration de types stricts}
+
+Chaque fichier PHP utilise la déclaration de types stricts :
+
+\begin{lstlisting}[language=PHP]
+<?php
+declare(strict_types=1);
+
+// Évite les conversions de type implicites
+\end{lstlisting}
+
+% ============================================================================
+\chapter{Implémentation détaillée}
+% ============================================================================
+
+\section{Modules de caisse}
+
+\subsection{Module caisse.php}
+
+La caisse permet d'ajouter des produits au panier et de générer des factures.
+
+\begin{itemize}
+    \item \textbf{Saisie de codes-barres} : Scanner ou saisie manuelle
+    \item \textbf{Ajout au panier} : Vérification du stock
+    \item \textbf{Gestion du panier} : Modification, suppression, vider
+    \item \textbf{Validation} : Avant chaque action
+    \item \textbf{Génération de facture} : Création et sauvegarde JSON
+\end{itemize}
+
+\subsection{Processus de vente}
+
+\begin{enumerate}
+    \item Caissier se connecte
+    \item Caissier scanne ou saisit un code-barres
+    \item Produit ajouté au panier (vérification stock)
+    \item Répétition des étapes 2-3
+    \item Clôture de la facture
+    \item Facture sauvegardée, stock mis à jour
+\end{enumerate}
+
+\section{Gestion des produits}
+
+\subsection{Opérations disponibles}
+
+\begin{itemize}
+    \item \textbf{Créer} : Ajouter un nouveau produit avec code-barres
+    \item \textbf{Lire} : Afficher la liste des produits et stocks
+    \item \textbf{Mettre à jour} : Modifier prix, stock, nom
+    \item \textbf{Supprimer} : Retirer un produit du catalogue
+\end{itemize}
+
+\subsection{Format des données}
+
+Chaque produit contient :
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+\hline
+code & string & Code-barres unique \\
+nom & string & Nom du produit \\
+prix & float & Prix unitaire (euros) \\
+stock & integer & Quantité en stock \\
+\hline
+\end{tabular}
+\caption{Structure d'un produit}
+\end{table}
+
+\section{Gestion des factures}
+
+\subsection{Génération de factures}
+
+Les factures sont générées avec un numéro unique au format : \texttt{FAC-YYYYMMDD-XXXX}
+
+Exemple : \texttt{FAC-20260427-0001}
+
+\subsection{Contenu d'une facture}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Champ} & \textbf{Description} \\
+\hline
+numero & Identifiant unique \\
+date & Timestamp de création \\
+caissier & Nom de l'utilisateur \\
+lignes & Tableau des articles \\
+total & Montant total (euros) \\
+\hline
+\end{tabular}
+\caption{Structure d'une facture}
+\end{table}
+
+\section{Administration}
+
+\subsection{Gestion des comptes}
+
+Les administrateurs peuvent :
+
+\begin{itemize}
+    \item Ajouter de nouveaux utilisateurs
+    \item Modifier les informations utilisateur
+    \item Supprimer des comptes
+    \item Gérer les rôles
+\end{itemize}
+
+\subsection{Utilisateurs par défaut}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Username} & \textbf{Password} & \textbf{Rôle} \\
+\hline
+admin & admin & Admin \\
+caissier & caissier & Caissier \\
+\hline
+\end{tabular}
+\caption{Comptes de démonstration}
+\end{table}
+
+% ============================================================================
+\chapter{Tests et résultats}
+% ============================================================================
+
+\section{Scénarios de test}
+
+\subsection{Test 1 : Authentification}
+
+\textbf{Scénario :} Un utilisateur se connecte avec des identifiants valides
+
+\textbf{Résultat :} L'utilisateur est redirigé vers le tableau de bord, la session est créée
+
+\subsection{Test 2 : Ajout de produit}
+
+\textbf{Scénario :} Ajout d'un produit via le formulaire
+
+\textbf{Résultat :} Le produit est enregistré dans produits.json, le stock est défini
+
+\subsection{Test 3 : Lecture code-barres}
+
+\textbf{Scénario :} Activation du scanner et scannage d'un code-barres
+
+\textbf{Résultat :} Le code est décodé et inséré dans le champ
+
+\subsection{Test 4 : Création facture}
+
+\textbf{Scénario :} Ajout de produits au panier et clôture
+
+\textbf{Résultat :} Facture créée avec numéro unique, stock mis à jour
+
+\subsection{Test 5 : Validation des données}
+
+\textbf{Scénario :} Saisie de données invalides (prix négatif, stock non numérique)
+
+\textbf{Résultat :} Données rejetées, message d'erreur affichée
+
+\subsection{Test 6 : Persistance}
+
+\textbf{Scénario :} Rechargement de la page, redémarrage du serveur
+
+\textbf{Résultat :} Les données persisten t via les fichiers JSON
+
+\section{Limitations identifiées}
+
+\begin{enumerate}
+    \item Les mots de passe ne sont pas chiffrés (démo uniquement)
+    \item Pas de mécanisme de verrouillage après tentatives échouées
+    \item Pas de gestion des transactions multi-utilisateurs
+    \item Pas de sauvegarde/archivage automatique
+    \item La lecture de codes-barres nécessite une caméra fonctionnelle
+\end{enumerate}
+
+% ============================================================================
+\chapter{Conclusion}
+% ============================================================================
+
+\section{Bilan du projet}
+
+Ce projet a permis de développer une application web fonctionnelle en PHP procédural, respectant les contraintes imposées :
+
+\begin{itemize}
+    \item ✓ Architecture procédurale clara et organisée
+    \item ✓ Persistance par fichiers JSON
+    \item ✓ Authentification avec rôles
+    \item ✓ Lecture de codes-barres intégrée
+    \item ✓ Validation robuste des données
+    \item ✓ Rapport technique en \LaTeX{}
+\end{itemize}
+
+\section{Compétences acquises}
+
+\begin{enumerate}
+    \item Structuration d'une application web procédurale
+    \item Gestion des sessions et authentification
+    \item Manipulation de fichiers et format JSON
+    \item Validation et sécurité des données
+    \item Intégration de bibliothèques externes (JavaScript)
+    \item Rédaction de documentation technique
+\end{enumerate}
+
+\section{Améliorations futures}
+
+\subsection{Évolutions technologiques}
+
+\begin{itemize}
+    \item Migration vers une base de données (PostgreSQL)
+    \item Architecture orientée objet (POO)
+    \item Framework comme Symfony ou Laravel
+    \item API REST pour applications mobiles
+\end{itemize}
+
+\subsection{Fonctionnalités additionnelles}
+
+\begin{itemize}
+    \item Système de remise/promotion
+    \item Gestion des clients et fidélité
+    \item Intégration de moyens de paiement
+    \item Synchronisation multi-caisses
+    \item Export comptable (fichiers SAE)
+    \item Alertes de stock bas
+    \item Historique d'audit complet
+\end{itemize}
+
+% ============================================================================
+% Annexes
+% ============================================================================
+
+\appendix
+
+\chapter{Code source : Helpers}
+
+\lstinputlisting[language=PHP, caption=Fonctions utilitaires complètes]{../includes/helpers.php}
+
+\chapter{Configuration}
+
+\begin{lstlisting}[language=PHP, caption=Fichier de configuration]
+<?php
+declare(strict_types=1);
+
+define('USERS_FILE', __DIR__ . '/../data/users.json');
+define('PRODUCTS_FILE', __DIR__ . '/../data/produits.json');
+define('INVOICES_FILE', __DIR__ . '/../data/factures.json');
+define('TAX_RATE', 0.20); // TVA 20%
+define('DATE_FORMAT', 'Y-m-d H:i:s');
+\end{lstlisting}
+
+\chapter{Captures d'écran}
+
+\section{Tableau de bord}
+
+Le tableau de bord affiche les modules disponibles selon le rôle de l'utilisateur :
+\begin{itemize}
+    \item Scanner/Caisse
+    \item Ajouter des produits
+    \item Consulter les factures
+    \item Ajouter un compte (admin)
+\end{itemize}
+
+\section{Interface de caisse}
+
+L'interface affiche :
+\begin{itemize}
+    \item Champ de saisie/scan du code-barres
+    \item Bouton d'activation du scanner
+    \item Panier avec articles ajoutés
+    \item Total à payer
+    \item Bouton de clôture
+\end{itemize}
+
+\chapter{Ressources et références}
+
+\section{Documentation PHP}
+
+\begin{itemize}
+    \item Sessions : \url{https://www.php.net/manual/fr/book.session.php}
+    \item Fichiers : \url{https://www.php.net/manual/fr/book.filesystem.php}
+    \item JSON : \url{https://www.php.net/manual/fr/book.json.php}
+\end{itemize}
+
+\section{Bibliothèques externes}
+
+\begin{itemize}
+    \item Html5Qrcode : \url{https://github.com/mebjas/html5-qrcode}
+\end{itemize}
+
+\end{document}

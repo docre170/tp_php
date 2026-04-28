@@ -18,7 +18,7 @@ require_once __DIR__ . '/includes/header.php';
         <img src="<?= e(base_url('assets/images/ajouter.jpg')); ?>" alt="ajout"
             style="width:100%;max-height:180px;object-fit:cover;">
         <h3 class="mt-2 mb-1">Ajouter des produits</h3>
-        <p class="mb-2">Creer et mettre a jour l'inventaire en JSON.</p>
+        <p class="mb-2">Créer et mettre à jour l'inventaire en JSON.</p>
         <a class="btn btn-primary" href="<?= e(base_url('modules/produits.php')); ?>">Gerer les produits</a>
     </article>
     <article class="card">
