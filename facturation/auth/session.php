@@ -45,7 +45,7 @@ function require_role(string $role): void
     require_login();
     if (!has_role($role)) {
         set_flash('error', 'Acces refuse.');
-        redirect_to('index.php');
+        redirect_to(role_home_path());
     }
 }
 
@@ -85,7 +85,24 @@ function require_any_role(array $roles): void
     require_login();
     if (!has_any_role($roles)) {
         set_flash('error', 'Acces refuse.');
-        redirect_to('index.php');
+        redirect_to(role_home_path());
     }
+}
+
+function role_home_path(?string $role = null): string
+{
+    $normalizedRole = normalize_role($role ?? (string) (current_user()['role'] ?? ''));
+
+    if ($normalizedRole === 'super_admin') {
+        return 'modules/inscription.php';
+    }
+    if ($normalizedRole === 'manager') {
+        return 'modules/produits.php';
+    }
+    if ($normalizedRole === 'caissier') {
+        return 'modules/caisse.php';
+    }
+
+    return 'index.php';
 }
 

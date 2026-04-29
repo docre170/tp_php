@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $users[] = [
         'username' => $username,
-        'password' => $password,
+        'password' => password_hash($password, PASSWORD_DEFAULT),
         'nom' => $nom,
         'role' => $role,
     ];

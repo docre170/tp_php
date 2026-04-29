@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/session.php';
 
 if (is_logged_in()) {
-    redirect_to('index.php');
+    redirect_to(role_home_path());
 }
 
 $error = '';
@@ -17,7 +17,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $users = read_json_file(USERS_FILE);
 
     foreach ($users as $user) {
-        if (($user['username'] ?? '') === $username && ($user['password'] ?? '') === $password) {
+        if (($user['username'] ?? '') !== $username) {
+            continue;
+        }
+
+        $storedPassword = (string) ($user['password'] ?? '');
+        $isValid = false;
+        if ($storedPassword !== '' && password_verify($password, $storedPassword)) {
+            $isValid = true;
+        } elseif ($storedPassword !== '' && hash_equals($storedPassword, $password)) {
+            // Compatibilite legacy: mots de passe en clair.
+            $isValid = true;
+        }
+
+        if ($isValid) {
             $role = normalize_role((string) ($user['role'] ?? ''));
             $_SESSION['user'] = [
                 'username' => $user['username'],
@@ -26,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
             $_SESSION['cart'] = [];
             set_flash('success', 'Connexion reussie.');
-            redirect_to('index.php');
+            redirect_to(role_home_path($role));
         }
     }
 
