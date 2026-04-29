@@ -80,3 +80,15 @@ déjà référencé.
 5. Après validation, les données sont écrites dans data/produits.json.
 6. Si le code-barres est déjà connu, les informations existantes s’affichent.
 
+3.4 Contraintes techniques
+
+— La lecture du code-barres est réalisée via ZXing ou QuaggaJS.
+— Toutes les données saisies doivent être validées côté serveur avant tout enregistre nment.
+— Vérifications minimales : champs non vides, prix et quantité numériques et positifs,
+format de date valide.
+— En cas de saisie invalide, un message d’erreur s’affiche sans effacer les données déjà
+saisies.
+— Accès réservé aux rôles Manager et Super Administrateur
+
+Réalisé avec succes
+--------------------------------------------------------------------------------------------------------------------
