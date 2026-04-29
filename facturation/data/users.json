@@ -3,13 +3,19 @@
         "username": "admin",
         "password": "admin123",
         "nom": "Administrateur",
-        "role": "admin"
+        "role": "super_admin"
     },
     {
         "username": "caisse",
         "password": "caisse123",
         "nom": "Caissier",
         "role": "caissier"
+    },
+    {
+        "username": "manager",
+        "password": "manager123",
+        "nom": "Manager",
+        "role": "manager"
     }
 ]
 

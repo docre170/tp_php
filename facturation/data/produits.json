@@ -47,5 +47,12 @@
         "prix": 1.21,
         "stock": 4,
         "date_expiration": "04-28-2026"
+    },
+    {
+        "code": "1111111",
+        "nom": "sel",
+        "prix": 12.1,
+        "stock": 12,
+        "date_expiration": "04-28-2026"
     }
 ]

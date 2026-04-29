@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 { fps: 10, qrbox: 250 },
                 function (decodedText) {
                     codeInput.value = decodedText;
+                    codeInput.dispatchEvent(new Event("input", { bubbles: true }));
                     scanner.stop();
                     scanner = null;
                     scannerContainer.classList.add("hidden");

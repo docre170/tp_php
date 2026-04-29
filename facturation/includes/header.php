@@ -20,7 +20,7 @@ $flash = get_flash();
 <body>
     <header class="header">
         <div class="container header-content">
-            <h1 class="logo">Supermarche - Facturation</h1>
+            <h1 class="logo">PAYPAS</h1>
             <nav class="nav">
                 <ul>
                     <li>
@@ -29,23 +29,28 @@ $flash = get_flash();
                     <li>
                         <a class="btn btn-secondary" href="<?= e(base_url('modules/caisse.php')); ?>">Caisse</a>
                     </li>
+                    <?php if ($user !== null && has_any_role(['manager', 'super_admin'])): ?>
                     <li>
                         <a class="btn btn-secondary" href="<?= e(base_url('modules/produits.php')); ?>">Produits</a>
                     </li>
+                    <?php endif; ?>
                     <li>
                         <a class="btn btn-secondary" href="<?= e(base_url('modules/factures.php')); ?>">Factures</a>
                     </li>
+                    <?php if ($user !== null && has_any_role(['manager', 'super_admin'])): ?>
                     <li>
-                        <a class="btn btn-secondary" href="<?= e(base_url('rapports/rapport-journalier.php')); ?>">Rapport</a>
+                        <a class="btn btn-secondary"
+                            href="<?= e(base_url('rapports/rapport-journalier.php')); ?>">Rapport</a>
                     </li>
-                    <?php if ($user !== null && ($user['role'] ?? '') === 'admin'): ?>
-                        <li>
-                            <a class="btn btn-secondary" href="<?= e(base_url('modules/inscription.php')); ?>">Comptes</a>
-                        </li>
+                    <?php endif; ?>
+                    <?php if ($user !== null && has_role('super_admin')): ?>
+                    <li>
+                        <a class="btn btn-secondary" href="<?= e(base_url('modules/inscription.php')); ?>">Comptes</a>
+                    </li>
                     <?php endif; ?>
                     <?php if ($user !== null): ?>
-                        <li class="user-info"><?= e($user['nom']); ?> (<?= e($user['role']); ?>)</li>
-                        <li><a class="btn btn-logout" href="<?= e(base_url('auth/logout.php')); ?>">Deconnexion</a></li>
+                    <li class="user-info"><?= e($user['nom']); ?> (<?= e($user['role']); ?>)</li>
+                    <li><a class="btn btn-logout" href="<?= e(base_url('auth/logout.php')); ?>">Deconnexion</a></li>
                     <?php endif; ?>
                 </ul>
             </nav>
@@ -53,7 +58,7 @@ $flash = get_flash();
     </header>
     <main class="main-content container">
         <?php if ($flash !== null): ?>
-            <div class="alert alert-<?= e($flash['type'] ?? 'info'); ?>">
-                <?= e($flash['message'] ?? ''); ?>
-            </div>
+        <div class="alert alert-<?= e($flash['type'] ?? 'info'); ?>">
+            <?= e($flash['message'] ?? ''); ?>
+        </div>
         <?php endif; ?>

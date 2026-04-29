@@ -18,10 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     foreach ($users as $user) {
         if (($user['username'] ?? '') === $username && ($user['password'] ?? '') === $password) {
+            $role = normalize_role((string) ($user['role'] ?? ''));
             $_SESSION['user'] = [
                 'username' => $user['username'],
                 'nom' => $user['nom'],
-                'role' => $user['role'],
+                'role' => $role,
             ];
             $_SESSION['cart'] = [];
             set_flash('success', 'Connexion reussie.');
@@ -59,7 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button class="btn btn-primary" type="submit">Se connecter</button>
             </form>
             <p class="mt-2">
-                Demo admin: <code>admin / admin123</code><br>
+                Demo super admin: <code>admin / admin123</code><br>
+                Demo manager: <code>manager / manager123</code><br>
                 Demo caissier: <code>caisse / caisse123</code>
             </p>
         </section>

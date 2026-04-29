@@ -3,14 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../auth/session.php';
-require_login();
-
-$user = current_user();
-$role = (string) ($user['role'] ?? '');
-if ($role !== 'admin' && $role !== 'manager' && $role !== 'super_administrateur') {
-    set_flash('error', 'Seul un Manager ou Super Administrateur peut modifier les produits.');
-    redirect_to('index.php');
-}
+require_any_role(['manager', 'super_admin']);
 
 // Récupérer les données saisies précédemment en cas d'erreur
 $form_data = [

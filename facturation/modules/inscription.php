@@ -3,18 +3,14 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../auth/session.php';
-require_login();
-
+require_role('super_admin');
 $user = current_user();
-if (($user['role'] ?? '') !== 'admin') {
-    set_flash('error', 'Seul un admin peut ajouter un compte.');
-    redirect_to('index.php');
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = post_string('action');
     if ($action === 'delete') {
         $usernameToDelete = post_string('username_to_delete');
+        $rolesGerables = ['caissier', 'manager'];
         if ($usernameToDelete === '') {
             set_flash('error', 'Compte invalide.');
             redirect_to('modules/inscription.php');
@@ -28,13 +24,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $users = read_json_file(USERS_FILE);
         $updatedUsers = [];
         $deleted = false;
+        $roleInterdit = false;
 
         foreach ($users as $existingUser) {
             if (($existingUser['username'] ?? '') === $usernameToDelete) {
+                $existingRole = normalize_role((string) ($existingUser['role'] ?? ''));
+                if (!in_array($existingRole, $rolesGerables, true)) {
+                    $roleInterdit = true;
+                    $updatedUsers[] = $existingUser;
+                    continue;
+                }
                 $deleted = true;
                 continue;
             }
             $updatedUsers[] = $existingUser;
+        }
+
+        if ($roleInterdit) {
+            set_flash('error', 'Seuls les comptes Caissier et Manager peuvent etre supprimes.');
+            redirect_to('modules/inscription.php');
         }
 
         if (!$deleted) {
@@ -56,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = post_string('password');
     $role = post_string('role');
 
-    $rolesAutorises = ['admin', 'caissier', 'client'];
+    $rolesAutorises = ['caissier', 'manager'];
     if ($nom === '' || $username === '' || $password === '' || !in_array($role, $rolesAutorises, true)) {
         set_flash('error', 'Veuillez remplir correctement tous les champs.');
         redirect_to('modules/inscription.php');
@@ -108,8 +116,7 @@ require_once __DIR__ . '/../includes/header.php';
             <label for="role">Role</label>
             <select id="role" name="role" required>
                 <option value="caissier">Caissier</option>
-                <option value="admin">Admin</option>
-                <option value="client">Client</option>
+                <option value="manager">Manager</option>
             </select>
         </div>
         <button class="btn btn-success" type="submit">Creer le compte</button>
@@ -129,13 +136,16 @@ require_once __DIR__ . '/../includes/header.php';
         </thead>
         <tbody>
         <?php foreach ($users as $existingUser): ?>
+            <?php $existingRole = normalize_role((string) ($existingUser['role'] ?? '')); ?>
             <tr>
                 <td><?= e((string) ($existingUser['nom'] ?? '')); ?></td>
                 <td><?= e((string) ($existingUser['username'] ?? '')); ?></td>
-                <td><?= e((string) ($existingUser['role'] ?? '')); ?></td>
+                <td><?= e($existingRole); ?></td>
                 <td>
                     <?php if (($existingUser['username'] ?? '') === ($user['username'] ?? '')): ?>
                         <span>Compte courant</span>
+                    <?php elseif (!in_array($existingRole, ['caissier', 'manager'], true)): ?>
+                        <span>Non supprimable</span>
                     <?php else: ?>
                         <form method="post" style="display:inline;">
                             <input type="hidden" name="action" value="delete">

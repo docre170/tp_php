@@ -3,7 +3,24 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../auth/session.php';
-require_login();
+require_any_role(['caissier', 'manager', 'super_admin']);
+
+function generate_invoice_number(array $factures): string
+{
+    $existing = [];
+    foreach ($factures as $facture) {
+        $numero = (string) ($facture['numero'] ?? '');
+        if ($numero !== '') {
+            $existing[$numero] = true;
+        }
+    }
+
+    do {
+        $numero = 'FAC-' . date('Ymd-His') . '-' . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+    } while (isset($existing[$numero]));
+
+    return $numero;
+}
 
 if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
@@ -26,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $quantite = max(1, post_int('quantite'));
 
         if (!isset($produitsByCode[$code])) {
-            set_flash('error', 'Produit introuvable.');
+            set_flash('error', 'Produit inconnu. Veuillez demander au manager de l enregistrer avant la vente.');
             redirect_to('modules/caisse.php');
         }
 
@@ -42,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['cart'][$code] = [
             'code' => $code,
             'nom' => (string) ($produit['nom'] ?? ''),
-            'prix' => (float) ($produit['prix'] ?? 0),
+            'prix_ht' => (float) ($produit['prix'] ?? 0),
             'quantite' => $deja + $quantite,
         ];
         set_flash('success', 'Produit ajoute au panier.');
@@ -62,19 +79,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $cart = array_values($_SESSION['cart']);
-        $total = 0.0;
+        $totalHt = 0.0;
         foreach ($cart as $item) {
-            $total += ((float) $item['prix']) * ((int) $item['quantite']);
+            $totalHt += ((float) $item['prix_ht']) * ((int) $item['quantite']);
         }
+        $tvaRate = 0.18;
+        $montantTva = $totalHt * $tvaRate;
+        $totalTtc = $totalHt + $montantTva;
 
         $factures = read_json_file(INVOICES_FILE);
-        $numero = 'FAC-' . date('Ymd') . '-' . str_pad((string) (count($factures) + 1), 4, '0', STR_PAD_LEFT);
+        $numero = generate_invoice_number($factures);
         $facture = [
             'numero' => $numero,
             'date' => date('Y-m-d H:i:s'),
             'caissier' => current_user()['username'] ?? 'n/a',
             'lignes' => $cart,
-            'total' => round($total, 2),
+            'total_ht' => round($totalHt, 2),
+            'taux_tva' => $tvaRate,
+            'montant_tva' => round($montantTva, 2),
+            'total_ttc' => round($totalTtc, 2),
+            'net_a_payer' => round($totalTtc, 2),
         ];
         $factures[] = $facture;
 
@@ -96,10 +120,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $cart = array_values($_SESSION['cart']);
-$totalPanier = 0.0;
+$totalHtPanier = 0.0;
 foreach ($cart as $item) {
-    $totalPanier += ((float) $item['prix']) * ((int) $item['quantite']);
+    $totalHtPanier += ((float) $item['prix_ht']) * ((int) $item['quantite']);
 }
+$tvaRate = 0.18;
+$montantTvaPanier = $totalHtPanier * $tvaRate;
+$totalTtcPanier = $totalHtPanier + $montantTvaPanier;
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -110,6 +137,7 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="form-group">
             <label for="code-input">Code-barres</label>
             <input id="code-input" name="code" required>
+            <small id="product-preview" style="display:block;margin-top:6px;">Produit: - | Prix HT: -</small>
         </div>
         <div class="form-group">
             <label for="quantite">Quantite</label>
@@ -132,10 +160,10 @@ require_once __DIR__ . '/../includes/header.php';
         <thead>
             <tr>
                 <th>Code</th>
-                <th>Nom</th>
-                <th>Prix</th>
+                <th>Designation</th>
+                <th>Prix unit. HT</th>
                 <th>Quantite</th>
-                <th>Sous-total</th>
+                <th>Sous-total HT</th>
             </tr>
         </thead>
         <tbody>
@@ -143,14 +171,17 @@ require_once __DIR__ . '/../includes/header.php';
             <tr>
                 <td><?= e((string) $item['code']); ?></td>
                 <td><?= e((string) $item['nom']); ?></td>
-                <td><?= e(number_format((float) $item['prix'], 2)); ?> $</td>
+                <td><?= e(number_format((float) $item['prix_ht'], 2)); ?> CDF</td>
                 <td><?= e((string) $item['quantite']); ?></td>
-                <td><?= e(number_format(((float) $item['prix']) * ((int) $item['quantite']), 2)); ?> $</td>
+                <td><?= e(number_format(((float) $item['prix_ht']) * ((int) $item['quantite']), 2)); ?> CDF</td>
             </tr>
         <?php endforeach; ?>
         </tbody>
     </table>
-    <p class="mt-2"><strong>Total:</strong> <?= e(number_format($totalPanier, 2)); ?> $</p>
+    <p class="mt-2"><strong>Total HT:</strong> <?= e(number_format($totalHtPanier, 2)); ?> CDF</p>
+    <p><strong>TVA (18%):</strong> <?= e(number_format($montantTvaPanier, 2)); ?> CDF</p>
+    <p><strong>Total TTC:</strong> <?= e(number_format($totalTtcPanier, 2)); ?> CDF</p>
+    <p><strong>Net a payer:</strong> <?= e(number_format($totalTtcPanier, 2)); ?> CDF</p>
     <form method="post" class="mt-2" style="display:flex;gap:10px;">
         <input type="hidden" name="action" value="checkout">
         <button class="btn btn-success" type="submit">Valider la facture</button>
@@ -163,5 +194,31 @@ require_once __DIR__ . '/../includes/header.php';
 
 <script src="https://unpkg.com/html5-qrcode" defer></script>
 <script src="<?= e(base_url('assets/js/scanner.js')); ?>" defer></script>
+<script>
+window.productByCode = <?= json_encode($produitsByCode, JSON_UNESCAPED_UNICODE); ?>;
+document.addEventListener('DOMContentLoaded', function () {
+    const codeInput = document.getElementById('code-input');
+    const preview = document.getElementById('product-preview');
+    if (!codeInput || !preview) {
+        return;
+    }
+
+    const updatePreview = function () {
+        const code = codeInput.value.trim();
+        if (code === '' || !window.productByCode || !window.productByCode[code]) {
+            preview.textContent = 'Produit: - | Prix HT: -';
+            return;
+        }
+
+        const produit = window.productByCode[code];
+        const nom = String(produit.nom || '-');
+        const prix = Number(produit.prix || 0).toFixed(2);
+        preview.textContent = 'Produit: ' + nom + ' | Prix HT: ' + prix + ' CDF';
+    };
+
+    codeInput.addEventListener('input', updatePreview);
+    updatePreview();
+});
+</script>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
